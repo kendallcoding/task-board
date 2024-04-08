@@ -10,21 +10,21 @@ const submitButton = document.querySelector('#submitButton')
 // Todo: create a function to generate a unique task id
 
 
-function generateTaskId() {
-  
+function generateTaskId()  {
+  nextId = {
+  id: crypto.randomUUID(),
+  title: taskTitle,
+  dueDate: taskDueDate,
+  description: taskDescription,
+  status: "to-do",
     
-  if (!taskId) {
-    taskId = [];
- 
   }
-  return taskId;
 
+};
+
+function saveNextIdToStorage() { // this line of code takes the first or nextId and saves it to local storage
+localStorage.setItem('nextId', JSON.stringify(nextId)); // this line of code takes the nextId array, converts it to a string within the local storage
 }
-
-function saveNextIdToStorage(taskId) {
-localStorage.setItem('nextId', JSON.stringify(taskId));
-}
-
 
 
 // Todo: create a function to create a task card
@@ -42,12 +42,12 @@ const cardDeleteBtn = $('<button>') // this code is creating the delete button e
   .attr('data-task-id', nextId) // this code is pulling the ID of the card created from local storage
   cardDeletetBtn.on('click', handleDeleteTask);  // this code is giving the the delete button on the card the ability when clicked to delete the card
 
-if (taskDueDate !== 'done') {
+if (taskDueDate !== 'done') { // this code is saying if the taskDueDate doens't equal 'done' then create the card with the due date
 const now = dayjs();
 const taskDueDateDate = dayjs(taskDueDate, 'DD/MM/YYYY');
 
 
-if (now.isSame(taskDueDateDate, 'day')) {
+if (now.isSame(taskDueDateDate, 'day')) { // this loop changes the warning displayed by the card depending on if the due date is before/same day or after the due date
   taskCard.addClass('bg-warning text-white')
 } else if (now.isAfter(taskDueDateDate)) {
     taskCard.addClass('bg-danger text-white')
@@ -67,11 +67,8 @@ taskCard.append(cardHeader, cardBody)
 
 // Todo: create a function to render the task list and make cards draggable
 function renderTaskList() { 
+const tasks = readTaskListFromStorage();
 
-  let tasks = taskLists
-  
-  if (!taskLists) {
-    taskLists = [];
   }
 
   tasks.forEach(task => {
@@ -82,31 +79,34 @@ $('.task-list').draggable();
 
 return tasks;
 
-}
+
 
 
 // Todo: create a function to handle adding a new task
 function handleAddTask(event) {
+  event.preventDefault();
 
 
-  const taskTitle = $('#taskTitle').val();
+  const taskTitle = $('#taskTitle').val().trim();
   const taskDueDate = $('#taskDueDate').val();
-  const description = $('#description').val();
-
-  const card = {
-    taskTitle,
-    taskDueDate,
-    description
+  const description = $('#description').val().trim();
+  
+  const newCard = {
+   title: taskTitle,
+   dueDate: taskDueDate,
+  description: description,
+  status: "to-do"
+    
     
     }
 
-    
-
-  }
 
   
+
+  //const nextId = readNextIdFromStorage();
+  //nextId.push(newCard);
   
-  
+}
 
 // Todo: create a function to handle deleting a task
 function handleDeleteTask(event){
@@ -119,14 +119,14 @@ function handleDeleteTask(event){
 
 // Todo: create a function to handle dropping a task into a new status lane
   function handleDrop(event, ui) {
-    const projects = readProjectsFromStorage();
+    const projects = readNextIdFromStorage();
     const taskId = ui.draggable[0].dataset.taskId;
     const newStatus = event.target.closest('.task-column').dataset.status;
 
     const task = projects.find(task => task.id === taskId);
     task.status = newStatus;
 
-    saveProjectsToStorage(projects);
+    saveNextIdToStorage(nextId);
     renderTaskList();
   }
 
